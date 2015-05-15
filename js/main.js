@@ -1,7 +1,7 @@
 if(typeof plugSimple !== "undefined"){plugSimple.init.stop(1);}
 plugSimple = {
 	AUTHOR: "R0CK",
-	VERSION: "0.04.2",
+	VERSION: "0_0 oh no",
 	PREFIX: "[PlugSimple]",
 	colors: {
 		ERROR: "bb0000",
@@ -17,6 +17,7 @@ plugSimple = {
 		]
 	},
 	img: {
+		LOGO: "https://avatars.githubusercontent.com/u/12117443?v=3",
 		AUTOWOOT_ON: "https://raw.githubusercontent.com/itotallyrock/PlugSimple/master/img/autowoot-on.png",
 		AUTOWOOT_OFF: "https://raw.githubusercontent.com/itotallyrock/PlugSimple/master/img/autowoot-dis.png"
 	},
@@ -24,8 +25,9 @@ plugSimple = {
 	tickRate: 1,//Ticks per second
 	tickNum: 0,
 	tick: "",
+	rawVersion: "",
 	settings: {
-		autowoot: false,
+		autowoot: true,
 		autodj: false,
 		debug: false,
 		chatLog: false,
@@ -78,6 +80,27 @@ plugSimple = {
 		}
 	},
 	core: {
+		getRawVersion: function(){
+			var total = 45;//45 from commits before transferring to the organization
+			$.getJSON("https://api.github.com/repos/plugSimple/plugSimple/stats/commit_activity").then(function(e){
+				for(var i in e){
+					total += e[i].total;
+					plugSimple.rawVersion = total;
+				}
+			});
+		},
+		formatVersion: function(version){
+			version = Math.abs(version);
+			var r = "0.0";
+			if(version < 100){
+				r += version/10;
+			}else if(version >= 100 && version < 1000){
+				r = "0."+version.toString().substring(0,2)+"."+version.toString().substring(2,3);
+			}else if(version >= 1000){
+				r = version.toString().substring(0,1)+"."+version.toString().substring(1,3)+"."+version.toString().substring(3,4);
+			}
+			return r;
+		},
 	    saveVersion: function(){
 		    localStorage.setItem("plugSimpleVersion",plugSimple.VERSION);//May do more elegant in future
 			plugSimple.logging.info("Version has been saved",true);
@@ -166,8 +189,17 @@ plugSimple = {
 		main: function(){
 			var s = new Date().getMilliseconds();
 			
-			plugSimple.PREFIX = "[PlugSimple v"+plugSimple.VERSION+"]";
-			
+			var total = 45;//45 from commits before transferring to the organization
+			$.getJSON("https://api.github.com/repos/plugSimple/plugSimple/stats/commit_activity").then(function(e){
+				for(var i in e){
+					total += e[i].total;
+					plugSimple.rawVersion = total;
+				}
+				plugSimple.VERSION = plugSimple.core.formatVersion(total);
+				console.log(plugSimple.VERSION);
+				plugSimple.PREFIX = "[PlugSimple v"+plugSimple.VERSION+"]";
+			});
+						
 			//LOAD EXTERNAL SCRIPTS
 			//if(typeof plugInterface == "undefined"){plugSimple.logging.log("Loaded plugInterfaceAPI status "+$.getScript("https://rawgit.com/itotallyrock/PlugInterfaceAPI/master/plugInterfaceAPI.js").readyState,true);}
 			/*
