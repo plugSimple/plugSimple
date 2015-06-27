@@ -7,7 +7,7 @@ If you are congratulations you can now start using plugSimple.  I highly recomme
 Now to the part you were waiting for...
 
 ####Download and Bookmarklet
-You can download the extension from this repository, or directly get it here, or if you just plan on using plugSimple you can get the bookmarklet by dragging this link to your bookmarks bar [plugSimple](javascript:alert("Hi").
+You can download the extension from this repository, or directly get it here, or if you just plan on using plugSimple you can get the bookmarklet by dragging this link to your bookmarks bar [plugSimple](http://plugSimple.github.io).
 
 ##Reasoning
 Down to brass tacks, I got tired of my badly coded, lazily written pluggedIn.  I didn't like at all how I did things.
