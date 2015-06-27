@@ -1,3 +1,4 @@
+
 if(typeof plugSimple !== "undefined"){plugSimple.init.stop(1);}
 plugSimple = {
 	AUTHOR: "R0CK",
@@ -30,43 +31,39 @@ plugSimple = {
 	settings: {
 		autowoot: true,
 		autodj: false,
-		debug: false,
-		chatLog: false,
-		tickLog: false
+		verbose: 0//0-5 No Logging to All Loggings
+		/*
+			5 = Ticklog and chatlog
+			4 = Status Logging
+			3 = Less spammy status logging
+			2 = 
+			1 = Major Errors and messages
+			0 = None
+		*/
 	},
 	logging: {
-		log: function(msg,debug){
-			if(debug && plugSimple.settings.debug){
-				console.log("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.DEFAULT+"; font-weight:700",msg);
-			}else if(!debug){
+		log: function(msg,verbose){
+			if(verbose <= plugSimple.settings.verbose){
 				console.log("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.DEFAULT+"; font-weight:700",msg);
 			}
 		},
-		warn: function(msg,debug){
-			if(debug && plugSimple.settings.debug){
-				console.warn("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.WARN+"; font-weight:700",msg);
-			}else if(!debug){
-				console.warn("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.WARN+"; font-weight:700",msg);
+		warn: function(msg,verbose){
+			if(verbose <= plugSimple.settings.verbose){
+				console.warn("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.WARN+"; font-weight:700;",msg);
 			}
 		},
-		error: function(msg,debug){
-			if(debug && plugSimple.settings.debug){
-				console.error("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.ERROR+"; font-weight:700",msg);
-			}else if(!debug){
+		error: function(msg,verbose){
+			if(verbose <= plugSimple.settings.verbose){
 				console.error("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.ERROR+"; font-weight:700",msg);
 			}
 		},
-		info: function(msg,debug){
-			if(debug && plugSimple.settings.debug){
-				console.info("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.INFO+"; font-weight:700",msg);
-			}else if(!debug){
+		info: function(msg,verbose){
+			if(verbose <= plugSimple.settings.verbose){
 				console.info("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.INFO+"; font-weight:700",msg);
 			}
 		},
-		success: function(msg,debug){
-			if(debug && plugSimple.settings.debug){
-				console.log("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.SUCCESS+"; font-weight:700",msg);
-			}else if(!debug){
+		success: function(msg,verbose){
+			if(verbose <= plugSimple.settings.verbose){
 				console.log("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.SUCCESS+"; font-weight:700",msg);
 			}
 		}
@@ -104,19 +101,19 @@ plugSimple = {
 		},
 	    saveVersion: function(){
 		    localStorage.setItem("plugSimpleVersion",plugSimple.VERSION);//May do more elegant in future
-			plugSimple.logging.info("Version has been saved",true);
+			plugSimple.logging.info("Version has been saved",4);
 		},
 		saveSettings: function(){
 			localStorage.setItem("plugSimple",JSON.stringify(plugSimple.settings));
-			plugSimple.logging.info("Settings have been saved.",true);
+			plugSimple.logging.info("Settings have been saved.",3);
 		},
 		getSettings: function(){
 			plugSimple.settings = JSON.parse(localStorage.getItem("plugSimple"));
-			plugSimple.logging.info("Retrieved Settings",true);
+			plugSimple.logging.info("Retrieved Settings",3);
 		},
 		clearSettings: function(){
 			localStorage.removeItem("plugSimple");
-			plugSimple.logging.info("Cleared Settings",true);
+			plugSimple.logging.info("Cleared Settings",1);
 			plugSimple.core.getSettings();
 		},
 		getTick: function(){
@@ -139,7 +136,7 @@ plugSimple = {
 			$("#woot").click();
 			API.on(API.ADVANCE,function(){
 				$("#woot").click();
-				plugSimple.logging.info("Running AutoWoot",true);
+				plugSimple.logging.info("Running AutoWoot",4);
 			});
 		},
 		autoDJ: function(){
@@ -147,7 +144,7 @@ plugSimple = {
 			API.on(API.ADVANCE,function(){
 				if(API.getWaitListPosition() === -1 && API.getDJ().id !== API.getUser().id){
 					$("#dj-button").click();
-					plugSimple.logging.info("Running AutoDJ",true);
+					plugSimple.logging.info("Running AutoDJ",4);
 				}
 			});
 		},
@@ -162,9 +159,10 @@ plugSimple = {
 			}*/
 			$(".message").remove();
 			API.on(API.CHAT, function(e){
-				if(plugSimple.settings.debug && plugSimple.settings.chatLog){
+				/*if(plugSimple.settings.debug && plugSimple.settings.chatLog){
 					console.log("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.DEFAULT+"; font-weight:700","ChatEvent",[e]);
-				}
+				*/
+				plugSimple.logging.log("ChatEvent ["+e+"]",5);
 				var color = plugSimple.colors.status[API.getUser(e.uid).status];
 				if(e.uid == API.getUser().id){
 					color = "#ffdd6f";
@@ -178,29 +176,30 @@ plugSimple = {
 					//color = "777f92";
 					color = "rgba(0,0,0,0)";
 				}
-				plugSimple.logging.info("chat msg color = #"+color, true);
+				plugSimple.logging.info("chat msg color = #"+color, 5);
 				$(".cm[data-cid=\""+e.cid+"\"]").css("border-left","3px solid "+color);
-				$(".cm[data-cid=\""+e.cid+"\"] > .badge-box").css("border","1px solid rgb(28, 173, 235)");
+				//$(".cm[data-cid=\""+e.cid+"\"] > .badge-box").css("border","1px solid rgb(28, 173, 235)");
 			});  
 		}
 	},
 	init: {
 		check: function(){
-			plugSimple.logging.log(typeof API !== 'undefined');
+			plugSimple.logging.log("API exists: "+typeof API !== 'undefined',2);
 			
-			plugSimple.logging.log("Checking for API. "+(typeof API !== 'undefined' && API.enabled));
+			plugSimple.logging.log("API Check: "+(typeof API !== 'undefined' && API.enabled),2);
 			if(typeof API !== 'undefined' && API.enabled){
-				plugSimple.logging.success("API Check Succeeded.");
+				plugSimple.logging.success("API Check Succeeded.",2);
 				clearTimeout(plugSimple.checkTimeout);
 				plugSimple.init.main();
 			}else{
-				plugSimple.logging.warn("API Check Failed attempting again.");
+				plugSimple.logging.warn("API Check Failed attempting again.",1);
 				plugSimple.checkTimeout = setTimeout(function(){plugSimple.init.check();},1000);
 			}
 		},
 		main: function(){
 			var s = new Date().getTime();
 			
+			plugSimple.settings.verbose = 0;
 			var total = 45;//45 from commits before transferring to the organization
 			$.getJSON("https://api.github.com/repos/plugSimple/plugSimple/stats/commit_activity").then(function(e){
 				for(var i in e){
@@ -215,16 +214,16 @@ plugSimple = {
 			//if(typeof plugInterface == "undefined"){plugSimple.logging.log("Loaded plugInterfaceAPI status "+$.getScript("https://rawgit.com/itotallyrock/PlugInterfaceAPI/master/plugInterfaceAPI.js").readyState,true);}
 			if(typeof Command == "undefined"){
 				$.getScript("https://rawgit.com/itotallyrock/PlugCommandAPI/master/plugCommandAPI.js").then(function(e){
-					plugSimple.logging.success("Loaded plugCommandAPI",true);
+					plugSimple.logging.success("Loaded plugCommandAPI",3);
 					plugSimple.init.cmd();
 				})
 			}else{
 				plugSimple.init.cmd();
 			}
-			if(localStorage.getItem("plugSimple") !== "undefined"){
+			if(localStorage.getItem("plugSimple") !== undefined && !(localStorage.getItem("plugSimple") == null || localStorage.getItem("plugSimple") == "null")){
 				plugSimple.core.getSettings();
 			}else{
-				plugSimple.core.getSettings();
+				//plugSimple.core.getSettings();
 				plugSimple.core.saveSettings();
 			}
 			
@@ -238,16 +237,14 @@ plugSimple = {
 			
 			plugSimple.tick = setInterval(function(){plugSimple.init.tick();plugSimple.tickNum++;},(1/plugSimple.tickRate)*1000);
 			
-			plugSimple.logging.info("Started in "+(new Date().getTime() - s)+"ms");
+			plugSimple.logging.success("Started in "+(new Date().getTime() - s)+"ms",1);
 		},
 		tick: function(){//WILL RUN EVERY TICKRATE
 			var s = new Date().getTime();
-			if(plugSimple.tickNum%10 === 0 && plugSimple.settings.tickLog){
-				plugSimple.logging.log("TICK #"+plugSimple.tickNum,true);
-			}
+			plugSimple.logging.log("TICK #"+plugSimple.tickNum,5);
 			$(".plugSimple-eta").text(plugSimple.util.formatTime(plugSimple.core.getETA()));
 			if(new Date().getTime() - s > (1/plugSimple.tickRate)*1000){
-				plugSimple.logging.info("Tick took longer than tickRate: "+(new Date().getTime() - s)+"ms",true);
+				plugSimple.logging.warn("Tick took longer than tickRate ("+(new Date().getTime() - s)+"ms)",1);
 				plugSimple.init.stop(4);
 			}
 		},
@@ -259,10 +256,10 @@ plugSimple = {
 				if(typeof plugSimple.settings[a[0]] == "undefined"){throw new SyntaxError("Unknown Setting "+a[0]);}
 				plugSimple.settings[a] = !plugSimple.settings[a[0]];
 				plugInterface.chat("info",(plugSimple.settings[a[0]] ? "Enabled" : "Disabled")+" "+a[0]);
-				plugSimple.logging.info((plugSimple.settings[a[0]] ? "Enabled" : "Disabled")+" "+a);
+				plugSimple.logging.info((plugSimple.settings[a[0]] ? "Enabled" : "Disabled")+" "+a,2);
 				plugSimple.init.update();
 			};
-			plugSimple.logging.log("Created settings Command",true);
+			plugSimple.logging.log("Created settings Command",3);
 		},
 		update: function(){
 			plugSimple.core.saveSettings();
@@ -281,14 +278,12 @@ plugSimple = {
 			if(plugSimple.settings.autowoot){plugSimple.core.autoWoot();}
 			if(plugSimple.settings.autodj){plugSimple.core.autoDJ();}
 			
-			API.on(API.CHAT, function(e){
-				$(".cm[data-cid=\""+e.cid+"\"] > .badge-box").css("border","2px solid #"+plugSimple.colors.status[API.getUser(e.uid).status]);
-			});
+			plugSimple.core.chatStatus();
 			
-			plugSimple.logging.info("Ran update in "+(new Date().getMilliseconds() - s)+"ms",true);
+			plugSimple.logging.success("Ran update in "+(new Date().getMilliseconds() - s)+"ms",4);
 		},
 		stop: function(e){
-			var s = new Date().getTime(),q,s,errCodes = ["undefined","Relaunching","Unknown Crash","Syntax Crash","Stuck in loop"];
+			var s = new Date().getTime(),q,r,errCodes = ["undefined","Relaunching","Unknown Crash","Syntax Crash","Stuck in loop"];
 			plugSimple.core.saveSettings();
 			
 			for(q in API){
@@ -297,17 +292,17 @@ plugSimple = {
 				}
 			}
 			
-			for(s in plugSimple.commands){
-				plugSimple.commands[s].destroy();
+			for(r in plugSimple.commands){
+				plugSimple.commands[r].destroy();
 			}
 			
 			clearInterval(plugSimple.tick);
 			$("[class^=\"plugSimple\"]").remove();
 			$("#dj-button > .bottom").remove();
 			if(e > 1){
-				plugSimple.logging.error("plugSimple has stopped ("+(new Date().getTime() - s)+"ms) ["+errCodes[e]+"].");
+				plugSimple.logging.error("plugSimple has stopped ("+(new Date().getTime() - s)+"ms) ["+errCodes[e]+"].",1);
 			}else{
-				plugSimple.logging.warn("plugSimple has stopped ("+(new Date().getTime() - s)+"ms) ["+errCodes[e]+"].");
+				plugSimple.logging.warn("plugSimple has stopped ("+(new Date().getTime() - s)+"ms) ["+errCodes[e]+"].",0);
 			}
 			delete plugSimple;
 		}
