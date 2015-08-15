@@ -1,0 +1,25 @@
+{
+    "welcome":"You're now using PlugSimple v%1 Build #%2.",
+    "exitSafe":"PlugSimple has stopped.",
+    "exitUnknown":"PlugSimple has stopped unexpectantly [%1].",
+    "UI":{
+            "autoWoot":"Autowoot",
+            "autoDJ":"AutoDJ",
+            "eta":"ETA"
+        }
+    },
+    "settings":{
+        "chatNotifications":"Chat Notifications",
+        "songStats":"Song Stats",
+        "autoWoot":"AutoWoot",
+        "autoDJ":"AutoDJ",
+        "verbose":"Verbose",
+        "netData":"Send NetData"
+    },
+    "commands":{
+        "unknown":"%1 is an unknown command, check for typos.",
+        "list":{
+            "version":"PlugSimple is running v%1 Build #%2"
+        }
+    }
+}
