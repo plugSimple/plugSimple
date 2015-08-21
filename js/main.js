@@ -1,9 +1,10 @@
-
 if(typeof plugSimple !== "undefined"){plugSimple.init.stop(1);}
 plugSimple = {
 	AUTHOR: "R0CK",
-	VERSION: "0_0 oh no",
-	PREFIX: "[PlugSimple]",
+	VERSION: "0.1.2",
+	PREFIX: "[PlugSimple v0.2.0]",
+	currentBuild: 55,
+	latestBuild: 55,
 	colors: {
 		ERROR: "bb0000",
 		WARN: "ddbb00",
@@ -23,15 +24,17 @@ plugSimple = {
 		AUTOWOOT_OFF: "https://raw.githubusercontent.com/itotallyrock/PlugSimple/master/img/autowoot-dis.png"
 	},
 	checkTimeout: "",
-	tickRate: 1,//Ticks per second
-	tickNum: 0,
-	tick: "",
-	rawVersion: "",
+	tick:{
+		rate: 1,//Ticks per second
+		num: 0,
+		tick: ""
+	},
 	commands: {},
 	settings: {
 		autowoot: true,
 		autodj: false,
-		verbose: 0//0-5 No Logging to All Loggings
+		verbose: 0,//0-5 No Logging to All Loggings
+		netdata: true
 		/*
 			5 = Ticklog and chatlog
 			4 = Status Logging
@@ -75,33 +78,21 @@ plugSimple = {
 				s = t - (h * 3600) - (m * 60);
 			
 			return (h < 10 ? "0"+h : h)+':'+(m < 10 ? "0"+m : m)+':'+(s < 10 ? "0"+s : s);
+		},
+		lang: function(t,a){
+			//WIP - Will return the language equivilent of the EN word provided as well as replace parameters.
 		}
 	},
 	core: {
-		getRawVersion: function(){
-			var total = 45;//45 from commits before transferring to the organization
+		getLatestBuild: function(){
 			$.getJSON("https://api.github.com/repos/plugSimple/plugSimple/stats/commit_activity").then(function(e){
-				for(var i in e){
-					total += e[i].total;
-					plugSimple.rawVersion = total;
+				var r = 0,
+					q;
+				for(q in e){
+					r += e[q].total;
 				}
+				plugSimple.latestBuild = r + 45;
 			});
-		},
-		formatVersion: function(version){
-			version = Math.abs(version);
-			var r = "0.0";
-			if(version < 100){
-				r += version/10;
-			}else if(version >= 100 && version < 1000){
-				r = "0."+version.toString().substring(0,2)+"."+version.toString().substring(2,3);
-			}else if(version >= 1000){
-				r = version.toString().substring(0,1)+"."+version.toString().substring(1,3)+"."+version.toString().substring(3,4);
-			}
-			return r;
-		},
-	    saveVersion: function(){
-		    localStorage.setItem("plugSimpleVersion",plugSimple.VERSION);//May do more elegant in future
-			plugSimple.logging.info("Version has been saved",4);
 		},
 		saveSettings: function(){
 			localStorage.setItem("plugSimple",JSON.stringify(plugSimple.settings));
@@ -117,19 +108,22 @@ plugSimple = {
 			plugSimple.core.getSettings();
 		},
 		getTick: function(){
-			return plugSimple.tickNum;
+			return plugSimple.tick.num;
 		},
 		getETA: function(){
 			if(API.getDJ() !== null && API.getDJ().id === API.getUser().id){
 				return "00:00:00";
 			}
-			var history = API.getHistory(),histlength = 0, avg = 0;
-			for(var i in history){
+			var history = API.getHistory(),histlength = 0,
+				avg = 0,
+				i,
+				sn;
+			for(i in history){
 				histlength += history[i].media.duration;
 			}
 			avg = histlength/history.length;
 			
-			var sn = parseInt((API.getWaitListPosition() == -1 ? API.getWaitList().length : API.getWaitListPosition())*avg+API.getTimeRemaining(), 10);
+			sn = parseInt((API.getWaitListPosition() == -1 ? API.getWaitList().length : API.getWaitListPosition())*avg+API.getTimeRemaining(), 10);
 			return sn;
 		},
 		autoWoot: function(){
@@ -159,9 +153,6 @@ plugSimple = {
 			}*/
 			$(".message").remove();
 			API.on(API.CHAT, function(e){
-				/*if(plugSimple.settings.debug && plugSimple.settings.chatLog){
-					console.log("%c"+plugSimple.PREFIX,"color: #"+plugSimple.colors.DEFAULT+"; font-weight:700","ChatEvent",[e]);
-				*/
 				plugSimple.logging.log("ChatEvent ["+e+"]",5);
 				var color = plugSimple.colors.status[API.getUser(e.uid).status];
 				if(e.uid == API.getUser().id){
@@ -199,32 +190,46 @@ plugSimple = {
 		main: function(){
 			var s = new Date().getTime();
 			
-			plugSimple.settings.verbose = 0;
-			var total = 45;//45 from commits before transferring to the organization
-			$.getJSON("https://api.github.com/repos/plugSimple/plugSimple/stats/commit_activity").then(function(e){
-				for(var i in e){
-					total += e[i].total;
-					plugSimple.rawVersion = total;
-				}
-				plugSimple.VERSION = plugSimple.core.formatVersion(total);
-				plugSimple.PREFIX = "[PlugSimple v"+plugSimple.VERSION+"]";
-			});
-						
+			plugSimple.settings.verbose = 4;//Reset Verbose Everytime For Spam Sake
+			
 			//LOAD EXTERNAL SCRIPTS
-			//if(typeof plugInterface == "undefined"){plugSimple.logging.log("Loaded plugInterfaceAPI status "+$.getScript("https://rawgit.com/itotallyrock/PlugInterfaceAPI/master/plugInterfaceAPI.js").readyState,true);}
+			if(typeof plugInterface == "undefined"){
+				$.getScript("https://rawgit.com/itotallyrock/PlugInterfaceAPI/master/plugInterfaceAPI.js").then(function(e){
+					plugSimple.logging.success("Loaded plugInterfaceAPI",3);
+					plugInterface.chat("success","PlugSimple has started successfully.","PlugSimple","icon-gift","icon-chat-subscriber");
+				});
+			}else{
+				plugInterface.chat("success","PlugSimple has restarted successfully.","PlugSimple","icon-gift","icon-chat-subscriber");
+			}
 			if(typeof Command == "undefined"){
 				$.getScript("https://rawgit.com/itotallyrock/PlugCommandAPI/master/plugCommandAPI.js").then(function(e){
 					plugSimple.logging.success("Loaded plugCommandAPI",3);
 					plugSimple.init.cmd();
-				})
+				});
 			}else{
 				plugSimple.init.cmd();
 			}
+			
 			if(localStorage.getItem("plugSimple") !== undefined && !(localStorage.getItem("plugSimple") == null || localStorage.getItem("plugSimple") == "null")){
 				plugSimple.core.getSettings();
 			}else{
 				//plugSimple.core.getSettings();
 				plugSimple.core.saveSettings();
+			}
+			
+			if(typeof gaTrack == "undefined"){
+				$.getScript("https://rawgit.com/plugSimple/plugSimple/master/js/dependencies/gajs.js").then(function(e){
+					plugSimple.logging.success("Loaded Google Analytics JS Port",3);
+					if(plugSimple.settings.netdata){
+						gaTrack('UA-55682309-1', 'http://plugSimple.github.io', '/js/bookmarklet.js');
+						plugSimple.logging.success("Sent NET Data.",1);
+					}
+				});
+			}else{
+				if(plugSimple.settings.netdata){
+					gaTrack('UA-55682309-1', 'http://plugSimple.github.io', 'bookmarklet.js');//Send data saying you have activated plugSimple
+					plugSimple.logging.success("Sent NET Data.",1);
+				}
 			}
 			
 			if(plugSimple.settings.autowoot){plugSimple.core.autoWoot();}
@@ -233,24 +238,25 @@ plugSimple = {
 			$("#dj-button").html($("#dj-button").html()+"<div class=\"bottom\"><span class=\"plugSimple-eta\"></span></div>");
 			$("#dj-button > .bottom").css("margin-top","-40px");
 			
-			plugSimple.core.chatStatus();
+			//plugSimple.core.chatStatus();
 			
-			plugSimple.tick = setInterval(function(){plugSimple.init.tick();plugSimple.tickNum++;},(1/plugSimple.tickRate)*1000);
+			plugSimple.tick.tick = setInterval(function(){plugSimple.init.tick();plugSimple.tick.num++;},(1/plugSimple.tick.rate)*1000);
 			
 			plugSimple.logging.success("Started in "+(new Date().getTime() - s)+"ms",1);
 		},
 		tick: function(){//WILL RUN EVERY TICKRATE
 			var s = new Date().getTime();
-			plugSimple.logging.log("TICK #"+plugSimple.tickNum,5);
+			plugSimple.logging.log("TICK #"+plugSimple.tick.num,5);
 			$(".plugSimple-eta").text(plugSimple.util.formatTime(plugSimple.core.getETA()));
-			if(new Date().getTime() - s > (1/plugSimple.tickRate)*1000){
+			if(new Date().getTime() - s > (1/plugSimple.tick.rate)*1000){
 				plugSimple.logging.warn("Tick took longer than tickRate ("+(new Date().getTime() - s)+"ms)",1);
+				plugInterface.chat("system","PlugSimple has stopped due to a loop error.  You will need to restart","PlugSimple","bdg-food05");
 				plugSimple.init.stop(4);
 			}
 		},
 		cmd: function(){//Initialize commands
-			plugSimple.commands["settings"] = new Command("settings",["type"])
-			plugSimple.commands["settings"].callback = function(a){
+			plugSimple.commands.settings = new Command("settings",["type"]);
+			plugSimple.commands.settings.callback = function(a){
 				a[0] = a[0].toLowerCase();
 				console.log("typeof setting = "+typeof plugSimple.settings[a[0]]);
 				if(typeof plugSimple.settings[a[0]] == "undefined"){throw new SyntaxError("Unknown Setting "+a[0]);}
@@ -272,18 +278,22 @@ plugSimple = {
 				}
 			}
 			
-			clearInterval(plugSimple.tick);
-			plugSimple.tick = setInterval(function(){plugSimple.init.tick();plugSimple.tickNum++;},(1/plugSimple.tickRate)*1000);
+			clearInterval(plugSimple.tick.tick);
+			plugSimple.tick.tick = setInterval(function(){plugSimple.init.tick();plugSimple.tick.num++;},(1/plugSimple.tick.rate)*1000);
 			
 			if(plugSimple.settings.autowoot){plugSimple.core.autoWoot();}
 			if(plugSimple.settings.autodj){plugSimple.core.autoDJ();}
 			
-			plugSimple.core.chatStatus();
+			//plugSimple.core.chatStatus();
 			
 			plugSimple.logging.success("Ran update in "+(new Date().getMilliseconds() - s)+"ms",4);
 		},
-		stop: function(e){
-			var s = new Date().getTime(),q,r,errCodes = ["undefined","Relaunching","Unknown Crash","Syntax Crash","Stuck in loop"];
+		stop: function(e){/
+			var s = new Date().getTime(),
+				q,
+				r,
+				errCodes = ["undefined","Relaunching","Unknown Crash","Syntax Crash","Stuck in loop"];
+			
 			plugSimple.core.saveSettings();
 			
 			for(q in API){
@@ -296,7 +306,7 @@ plugSimple = {
 				plugSimple.commands[r].destroy();
 			}
 			
-			clearInterval(plugSimple.tick);
+			clearInterval(plugSimple.tick.tick);
 			$("[class^=\"plugSimple\"]").remove();
 			$("#dj-button > .bottom").remove();
 			if(e > 1){
