@@ -1,3 +1,31 @@
+#Goodbye
+With the death of plug.dj, the use of this plugin is removed.  Any reason for further developement would be wasteful and without an environment to even test would have even less of a motive.  All in all, it's sad to see something like plug.dj go, it will be missed.
+
+*tldr Development is stopping because plug.dj shutdown*
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
+.
+
 #PlugSimple
 ##How to Use
 Currently plugSimple is still in an early developmental state.  What does this mean?  Well, many of the features are not fully implemented and some usage features won't exist yet.  For example currently to change any settings you need to know some basic Javscript and ChromeDevTools.  Currently I would not suggest using this unless you know both of those listed before.
